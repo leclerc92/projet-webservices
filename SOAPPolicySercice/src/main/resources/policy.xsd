@@ -1,0 +1,25 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.example.com/soap-api"
+           xmlns:tns="http://www.example.com/soap-api"
+           elementFormDefault="qualified">
+
+    <xs:element name="getPolicyRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="policyNumber" type="xs:string"/>
+                <xs:element name="claimType" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="getPolicyResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="valid" type="xs:boolean"/>
+                <xs:element name="coverageAmount" type="xs:double"/>
+                <xs:element name="description" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
