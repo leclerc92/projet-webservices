@@ -2,38 +2,84 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
              targetNamespace="http://www.flowable.org/processdef">
 
     <process id="insuranceClaimProcess" name="Insurance Claim Process" isExecutable="true">
-
         <startEvent id="startEvent" />
-        <sequenceFlow sourceRef="startEvent" targetRef="verifyIdentityTask" />
+        <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="verifyIdentityTask" />
 
-        <serviceTask id="verifyIdentityTask" name="Vérifier Identité (REST)"
-                     flowable:delegateExpression="${verifyIdentityDelegate}" />
-        <sequenceFlow sourceRef="verifyIdentityTask" targetRef="identityDecisionGateway" />
+        <serviceTask id="verifyIdentityTask" name="Vérifier Identité (REST)" flowable:delegateExpression="${verifyIdentityDelegate}" />
+        <sequenceFlow id="flow2" sourceRef="verifyIdentityTask" targetRef="identityDecisionGateway" />
 
         <exclusiveGateway id="identityDecisionGateway" name="Identité Valide ?" />
 
-        <sequenceFlow sourceRef="identityDecisionGateway" targetRef="checkPolicyTask">
-            <conditionExpression xsi:type="tFormalExpression">
-                <![CDATA[${isIdentityValid == true}]]>
-            </conditionExpression>
+        <sequenceFlow id="flow3" sourceRef="identityDecisionGateway" targetRef="checkPolicyTask">
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isIdentityValid == true}]]></conditionExpression>
         </sequenceFlow>
 
-        <sequenceFlow sourceRef="identityDecisionGateway" targetRef="rejectionEndEvent">
-            <conditionExpression xsi:type="tFormalExpression">
-                <![CDATA[${isIdentityValid == false}]]>
-            </conditionExpression>
+        <sequenceFlow id="flow4" sourceRef="identityDecisionGateway" targetRef="rejectionEndEvent">
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isIdentityValid == false}]]></conditionExpression>
         </sequenceFlow>
 
-        <serviceTask id="checkPolicyTask" name="Vérifier Police (SOAP)"
-                     flowable:delegateExpression="${checkPolicyDelegate}" />
-        <sequenceFlow sourceRef="checkPolicyTask" targetRef="approvedEndEvent" />
+        <serviceTask id="checkPolicyTask" name="Vérifier Police (SOAP)" flowable:delegateExpression="${checkPolicyDelegate}" />
+        <sequenceFlow id="flow5" sourceRef="checkPolicyTask" targetRef="approvedEndEvent" />
 
         <endEvent id="approvedEndEvent" name="Dossier en cours" />
         <endEvent id="rejectionEndEvent" name="Rejeté (Fraude Identité)" />
-
     </process>
 
+    <bpmndi:BPMNDiagram id="BPMNDiagram_insuranceClaimProcess">
+        <bpmndi:BPMNPlane bpmnElement="insuranceClaimProcess" id="BPMNPlane_insuranceClaimProcess">
+
+            <bpmndi:BPMNShape bpmnElement="startEvent" id="BPMNShape_startEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="163.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape bpmnElement="verifyIdentityTask" id="BPMNShape_verifyIdentityTask">
+                <omgdc:Bounds height="80.0" width="100.0" x="175.0" y="138.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape bpmnElement="identityDecisionGateway" id="BPMNShape_identityDecisionGateway">
+                <omgdc:Bounds height="40.0" width="40.0" x="320.0" y="158.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape bpmnElement="checkPolicyTask" id="BPMNShape_checkPolicyTask">
+                <omgdc:Bounds height="80.0" width="100.0" x="420.0" y="60.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape bpmnElement="approvedEndEvent" id="BPMNShape_approvedEndEvent">
+                <omgdc:Bounds height="28.0" width="28.0" x="585.0" y="86.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="rejectionEndEvent" id="BPMNShape_rejectionEndEvent">
+                <omgdc:Bounds height="28.0" width="28.0" x="420.0" y="250.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+                <omgdi:waypoint x="130.0" y="178.0"></omgdi:waypoint>
+                <omgdi:waypoint x="175.0" y="178.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+                <omgdi:waypoint x="275.0" y="178.0"></omgdi:waypoint>
+                <omgdi:waypoint x="320.0" y="178.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+                <omgdi:waypoint x="340.0" y="158.0"></omgdi:waypoint>
+                <omgdi:waypoint x="340.0" y="100.0"></omgdi:waypoint>
+                <omgdi:waypoint x="420.0" y="100.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+                <omgdi:waypoint x="340.0" y="198.0"></omgdi:waypoint>
+                <omgdi:waypoint x="340.0" y="264.0"></omgdi:waypoint>
+                <omgdi:waypoint x="420.0" y="264.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+                <omgdi:waypoint x="520.0" y="100.0"></omgdi:waypoint>
+                <omgdi:waypoint x="585.0" y="100.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
 </definitions>
