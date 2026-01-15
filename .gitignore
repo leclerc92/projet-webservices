@@ -1,0 +1,18 @@
+# IDE
+.vscode/
+.idea/
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*_pb2.py
+*_pb2_grpc.py
+
+# Logs
+*.log
+
