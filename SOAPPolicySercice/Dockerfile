@@ -1,5 +1,5 @@
 # Dockerfile pour SOAPPolicySercice
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk AS builder
 
 WORKDIR /app
 
@@ -21,12 +21,12 @@ COPY src src
 RUN ./mvnw clean package -DskipTests
 
 # Image de production
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
 # Installer curl pour le healthcheck
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Copier le JAR depuis l'étape de build
 COPY --from=builder /app/target/*.jar app.jar

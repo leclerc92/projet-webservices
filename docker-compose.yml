@@ -6,7 +6,6 @@ services:
     build:
       context: ./RESTIdentityService
       dockerfile: Dockerfile
-    platform: linux/amd64
     container_name: rest-identity-service
     ports:
       - "8080:8080"
@@ -20,7 +19,6 @@ services:
     build:
       context: ./SOAPPolicySercice
       dockerfile: Dockerfile
-    platform: linux/amd64
     container_name: soap-policy-service
     ports:
       - "8081:8081"
@@ -60,13 +58,12 @@ services:
     build:
       context: ./WorkflowService
       dockerfile: Dockerfile
-    platform: linux/amd64
     container_name: workflow-service
     ports:
       - "8082:8082"
     environment:
       # Configuration des URLs des services
-      - REST_IDENTITY_SERVICE_URL=http://rest-identity-service:8080
+      - REST_IDENTITY_SERVICE_URL=http://rest-identity-service:8080/api/identity
       - SOAP_POLICY_SERVICE_URL=http://soap-policy-service:8081/ws
       - GRAPHQL_CLAIM_SERVICE_URL=http://graphql-claim-service:4000
       - GRPC_FRAUD_SERVICE_HOST=grpc-fraud-service

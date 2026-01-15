@@ -19,13 +19,13 @@ public class WorkflowOrchestratorService {
 
     private final RestClient restClient;
 
-    @Value("${services.identity.url}")
+    @Value("${rest.identity.service.url}")
     private String identityServiceUrl;
 
-    @Value("${services.policy.url}")
+    @Value("${soap.policy.service.url}")
     private String policyServiceUrl;
 
-    @Value("${services.claims.url}")
+    @Value("${graphql.claim.service.url}")
     private String claimsServiceUrl;
 
     public WorkflowOrchestratorService() {
