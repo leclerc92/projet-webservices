@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package fraude;
+
+option java_multiple_files = true;
+option java_package = "com.micheldev.workflowservice.grpc";
+option java_outer_classname = "FraudDetectionProto";
+
+service ServiceDetectionFraude {
+  rpc VerifierFraude (RequeteFraude) returns (ReponseFraude);
+}
+
+message RequeteFraude {
+  string id_sinistre = 1;
+  string id_client = 2;
+  string type_sinistre = 3;
+  double montant = 4;
+  string description = 5;
+}
+
+message ReponseFraude {
+  string id_sinistre = 1;
+  NiveauRisque niveau = 2;
+  string raison = 3;
+}
+
+enum NiveauRisque {
+  NON_DEFINI = 0;
+  FAIBLE = 1;
+  MOYEN = 2;
+  ELEVE = 3;
+}

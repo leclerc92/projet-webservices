@@ -1,0 +1,39 @@
+services:
+  # Base de données PostgreSQL partagée
+  postgres:
+    image: postgres:15-alpine
+    container_name: flowable-postgres
+    environment:
+      POSTGRES_DB: flowable
+      POSTGRES_USER: flowable
+      POSTGRES_PASSWORD: flowable
+    ports:
+      - "5432:5432"
+    volumes:
+      - flowable-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowable"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Flowable UI - Interface complète (Modeler, Task, Admin, IDM)
+  flowable-ui:
+    image: flowable/flowable-ui:6.8.0
+    container_name: flowable-ui
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/flowable
+      - SPRING_DATASOURCE_USERNAME=flowable
+      - SPRING_DATASOURCE_PASSWORD=flowable
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - FLOWABLE_COMMON_APP_IDM-ADMIN_USER=admin
+      - FLOWABLE_COMMON_APP_IDM-ADMIN_PASSWORD=admin
+    ports:
+      - "8888:8080"
+    restart: unless-stopped
+
+volumes:
+  flowable-postgres-data:
