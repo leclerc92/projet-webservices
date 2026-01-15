@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package fraude;
+
+// Service de détection de fraude
+service ServiceDetectionFraude {
+  rpc VerifierFraude (RequeteFraude) returns (ReponseFraude);
+}
+
+// Requête - données du sinistre
+message RequeteFraude {
+  string id_sinistre = 1;     // Identifiant du sinistre
+  string id_client = 2;       // Identifiant du client
+  string type_sinistre = 3;   // Type : Auto, Habitation, Santé
+  double montant = 4;         // Montant réclamé
+  string description = 5;     // Description du sinistre
+}
+
+// Réponse - résultat de l'analyse
+message ReponseFraude {
+  string id_sinistre = 1;     // Identifiant du sinistre
+  NiveauRisque niveau = 2;    // Niveau de risque détecté
+  string raison = 3;          // Explication du résultat
+}
+
+// Niveaux de risque possibles
+enum NiveauRisque {
+  NON_DEFINI = 0;   // Valeur par défaut
+  FAIBLE = 1;       // Risque faible
+  MOYEN = 2;        // Risque moyen
+  ELEVE = 3;        // Risque élevé (rejet automatique possible)
+}
