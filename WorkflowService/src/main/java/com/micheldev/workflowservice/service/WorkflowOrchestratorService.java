@@ -118,8 +118,10 @@ public class WorkflowOrchestratorService {
                     .retrieve()
                     .body(String.class);
 
-            // Parse simple de la réponse SOAP pour extraire <valid>
-            return response != null && response.contains("<valid>true</valid>");
+            log.info("SOAP Response: {}", response);
+
+            // Parse simple - cherche "true" dans le champ valid (avec ou sans namespace)
+            return response != null && response.contains(">true</");
         } catch (Exception e) {
             log.error("Error calling Policy Service: {}", e.getMessage());
             return false;
@@ -172,6 +174,14 @@ public class WorkflowOrchestratorService {
             log.error("Error calling Claims Service: {}", e.getMessage());
             return new ArrayList<>();
         }
+    }
+
+    /**
+     * Récupère les claims d'un client via GraphQL (méthode publique pour test)
+     */
+    public List<ClaimResponse> getClaimsByClientId(String clientId) {
+        log.info("Fetching claims for clientId: {}", clientId);
+        return getClaims(clientId);
     }
 
     /**

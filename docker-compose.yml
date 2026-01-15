@@ -68,7 +68,7 @@ services:
       # Configuration des URLs des services
       - REST_IDENTITY_SERVICE_URL=http://rest-identity-service:8080
       - SOAP_POLICY_SERVICE_URL=http://soap-policy-service:8081/ws
-      - GRAPHQL_CLAIM_SERVICE_URL=http://graphql-claim-service:4000/graphql
+      - GRAPHQL_CLAIM_SERVICE_URL=http://graphql-claim-service:4000
       - GRPC_FRAUD_SERVICE_HOST=grpc-fraud-service
       - GRPC_FRAUD_SERVICE_PORT=50051
     depends_on:
