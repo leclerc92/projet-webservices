@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ==========================================
   # Service REST - Vérification d'identité
@@ -8,6 +6,7 @@ services:
     build:
       context: ./RESTIdentityService
       dockerfile: Dockerfile
+    platform: linux/amd64
     container_name: rest-identity-service
     ports:
       - "8080:8080"
@@ -21,6 +20,7 @@ services:
     build:
       context: ./SOAPPolicySercice
       dockerfile: Dockerfile
+    platform: linux/amd64
     container_name: soap-policy-service
     ports:
       - "8081:8081"
@@ -60,6 +60,7 @@ services:
     build:
       context: ./WorkflowService
       dockerfile: Dockerfile
+    platform: linux/amd64
     container_name: workflow-service
     ports:
       - "8082:8082"
