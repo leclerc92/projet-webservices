@@ -1,16 +1,13 @@
 const { ApolloServer, gql } = require('apollo-server');
-const { Pool } = require('pg');
 
-// Connexion PostgreSQL
-const pool = new Pool({
-    host: process.env.DB_HOST || 'localhost',
-    port: 5432,
-    database: 'claims_db',
-    user: 'claims_user',
-    password: 'claims_password'
-});
+// Données en dur
+const reclamations = [
+    { id: 'SIN-2026-001', clientId: 'CLI-123', typeSinistre: 'Auto', montant: 25000, statut: 'EN_COURS', dateCreation: '2026-01-10' },
+    { id: 'SIN-2026-002', clientId: 'CLI-123', typeSinistre: 'Habitation', montant: 15000, statut: 'APPROUVE', dateCreation: '2026-01-08' },
+    { id: 'SIN-2026-003', clientId: 'CLI-456', typeSinistre: 'Santé', montant: 5000, statut: 'REJETE', dateCreation: '2026-01-05' }
+];
 
-// Schéma GraphQL simplifié
+// Schéma GraphQL
 const typeDefs = gql`
     type Reclamation {
         id: ID!
@@ -26,20 +23,10 @@ const typeDefs = gql`
     }
 `;
 
-// Résolveur unique
+// Résolveur
 const resolvers = {
     Query: {
-        reclamations: async () => {
-            const result = await pool.query('SELECT * FROM reclamations ORDER BY date_creation DESC');
-            return result.rows.map(row => ({
-                id: row.id,
-                clientId: row.client_id,
-                typeSinistre: row.type_sinistre,
-                montant: parseFloat(row.montant),
-                statut: row.statut,
-                dateCreation: row.date_creation
-            }));
-        }
+        reclamations: () => reclamations
     }
 };
 
