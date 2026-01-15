@@ -1,14 +1,13 @@
 {
-  "name": "graphql-historique-service",
+  "name": "graphql-claim-tracking-service",
   "version": "1.0.0",
-  "description": "Service GraphQL pour l'historique des réclamations",
+  "description": "Service GraphQL pour le suivi des réclamations",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "apollo-server": "^3.13.0",
-    "graphql": "^16.8.1",
-    "pg": "^8.11.3"
+    "graphql": "^16.8.1"
   }
 }
