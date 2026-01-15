@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:flowable="http://flowable.org/bpmn" targetNamespace="http://www.flowable.org/processdef" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.10.1">
+  <process id="insuranceClaimProcess" name="Insurance Claim Process" isExecutable="true">
+    <startEvent id="startEvent" name="Declaration de prejudice" />
+    <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="verifyIdentityTask" />
+    <serviceTask id="verifyIdentityTask" name="Vérifier Identité (REST)" flowable:delegateExpression="${verifyIdentityDelegate}" />
+    <sequenceFlow id="flow2" sourceRef="verifyIdentityTask" targetRef="identityDecisionGateway" />
+    <exclusiveGateway id="identityDecisionGateway" name="Identité Valide ?" />
+    <sequenceFlow id="flow3" sourceRef="identityDecisionGateway" targetRef="checkPolicyTask">
+      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow4" sourceRef="identityDecisionGateway" targetRef="rejectionEndEvent">
+      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == false}</conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="checkPolicyTask" name="Vérifier Police (SOAP)" flowable:delegateExpression="${checkPolicyDelegate}">
+      <outgoing>Flow_0hv9znx</outgoing>
+    </serviceTask>
+    <endEvent id="rejectionEndEvent" name="Rejeté (mauvaise Identité)" />
+    <exclusiveGateway id="Gateway_1lppy3r">
+      <incoming>Flow_0hv9znx</incoming>
+      <outgoing>Flow_1na3ihb</outgoing>
+      <outgoing>Flow_0b6kipb</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="Flow_0hv9znx" sourceRef="checkPolicyTask" targetRef="Gateway_1lppy3r" />
+    <serviceTask id="Activity_1v8to5s" name="Vérifier Fraude (gRPC)">
+      <incoming>Flow_1na3ihb</incoming>
+      <outgoing>Flow_1wuu0kj</outgoing>
+    </serviceTask>
+    <sequenceFlow id="Flow_1na3ihb" sourceRef="Gateway_1lppy3r" targetRef="Activity_1v8to5s" />
+    <endEvent id="Event_0zitl9l" name="Rejeté Police">
+      <incoming>Flow_0b6kipb</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_0b6kipb" sourceRef="Gateway_1lppy3r" targetRef="Event_0zitl9l" />
+    <serviceTask id="Activity_1eojis4" name="Stocker demande">
+      <incoming>Flow_1wuu0kj</incoming>
+    </serviceTask>
+    <sequenceFlow id="Flow_1wuu0kj" sourceRef="Activity_1v8to5s" targetRef="Activity_1eojis4" />
+    <startEvent id="Event_0743o5s" name="demande historique">
+      <outgoing>Flow_0u14rv0</outgoing>
+    </startEvent>
+    <serviceTask id="Activity_15ae6gi" name="Vérifier Identité (REST)">
+      <incoming>Flow_0u14rv0</incoming>
+      <outgoing>Flow_0ee328e</outgoing>
+    </serviceTask>
+    <exclusiveGateway id="Gateway_03vszk4" name="Identité Valide ?">
+      <incoming>Flow_0ee328e</incoming>
+      <outgoing>Flow_1720pln</outgoing>
+      <outgoing>Flow_1tgkkc8</outgoing>
+    </exclusiveGateway>
+    <serviceTask id="Activity_1cwpy2f" name="Vérifier Police (SOAP)">
+      <incoming>Flow_1720pln</incoming>
+      <outgoing>Flow_15irt65</outgoing>
+    </serviceTask>
+    <endEvent id="Event_1ma6epr" name="Rejeté (mauvaise Identité)">
+      <incoming>Flow_1tgkkc8</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_0u14rv0" sourceRef="Event_0743o5s" targetRef="Activity_15ae6gi" />
+    <sequenceFlow id="Flow_0ee328e" sourceRef="Activity_15ae6gi" targetRef="Gateway_03vszk4" />
+    <sequenceFlow id="Flow_1720pln" sourceRef="Gateway_03vszk4" targetRef="Activity_1cwpy2f">
+      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="Flow_1tgkkc8" sourceRef="Gateway_03vszk4" targetRef="Event_1ma6epr">
+      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == false}</conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="Activity_1derlw8" name="Recupérer historique">
+      <incoming>Flow_19i5jho</incoming>
+    </serviceTask>
+    <sequenceFlow id="Flow_15irt65" sourceRef="Activity_1cwpy2f" targetRef="Gateway_1pzlckv" />
+    <exclusiveGateway id="Gateway_1pzlckv">
+      <incoming>Flow_15irt65</incoming>
+      <outgoing>Flow_19i5jho</outgoing>
+      <outgoing>Flow_19amm9d</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="Flow_19i5jho" sourceRef="Gateway_1pzlckv" targetRef="Activity_1derlw8" />
+    <endEvent id="Event_1ec3e0g" name="Rejeté Police">
+      <incoming>Flow_19amm9d</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_19amm9d" sourceRef="Gateway_1pzlckv" targetRef="Event_1ec3e0g" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_insuranceClaimProcess">
+    <bpmndi:BPMNPlane id="BPMNPlane_insuranceClaimProcess" bpmnElement="insuranceClaimProcess">
+      <bpmndi:BPMNShape id="BPMNShape_verifyIdentityTask" bpmnElement="verifyIdentityTask">
+        <omgdc:Bounds x="285" y="248" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_identityDecisionGateway" bpmnElement="identityDecisionGateway" isMarkerVisible="true">
+        <omgdc:Bounds x="430" y="268" width="40" height="40" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="411" y="308" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_checkPolicyTask" bpmnElement="checkPolicyTask">
+        <omgdc:Bounds x="530" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_rejectionEndEvent" bpmnElement="rejectionEndEvent">
+        <omgdc:Bounds x="530" y="360" width="28" height="28" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="507" y="396" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1lppy3r_di" bpmnElement="Gateway_1lppy3r" isMarkerVisible="true">
+        <omgdc:Bounds x="685" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0c5j4un" bpmnElement="Activity_1v8to5s">
+        <omgdc:Bounds x="790" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0zitl9l_di" bpmnElement="Event_0zitl9l">
+        <omgdc:Bounds x="822" y="270" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="808" y="313" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0wv0r54" bpmnElement="Activity_1eojis4">
+        <omgdc:Bounds x="1000" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_startEvent" bpmnElement="startEvent">
+        <omgdc:Bounds x="174" y="199" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="154" y="236" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0wh27on" bpmnElement="Event_0743o5s">
+        <omgdc:Bounds x="174" y="535" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="166" y="572" width="48" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_10oasuq" bpmnElement="Activity_15ae6gi">
+        <omgdc:Bounds x="285" y="584" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1r65k0q" bpmnElement="Gateway_03vszk4" isMarkerVisible="true">
+        <omgdc:Bounds x="430" y="604" width="40" height="40" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="411" y="644" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0dbwse3" bpmnElement="Activity_1cwpy2f">
+        <omgdc:Bounds x="530" y="506" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1e8h4ni" bpmnElement="Event_1ma6epr">
+        <omgdc:Bounds x="530" y="696" width="28" height="28" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="507" y="732" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_15xgezn" bpmnElement="Gateway_1pzlckv" isMarkerVisible="true">
+        <omgdc:Bounds x="655" y="525" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0rp70bt" bpmnElement="Activity_1derlw8">
+        <omgdc:Bounds x="730" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0pcoa1c" bpmnElement="Event_1ec3e0g">
+        <omgdc:Bounds x="762" y="606" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="748" y="649" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow1" bpmnElement="flow1">
+        <omgdi:waypoint x="204" y="214" />
+        <omgdi:waypoint x="245" y="214" />
+        <omgdi:waypoint x="245" y="288" />
+        <omgdi:waypoint x="285" y="288" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow2" bpmnElement="flow2">
+        <omgdi:waypoint x="385" y="288" />
+        <omgdi:waypoint x="430" y="288" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow3" bpmnElement="flow3">
+        <omgdi:waypoint x="450" y="268" />
+        <omgdi:waypoint x="450" y="210" />
+        <omgdi:waypoint x="530" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow4" bpmnElement="flow4">
+        <omgdi:waypoint x="450" y="308" />
+        <omgdi:waypoint x="450" y="374" />
+        <omgdi:waypoint x="530" y="374" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hv9znx_di" bpmnElement="Flow_0hv9znx">
+        <omgdi:waypoint x="630" y="210" />
+        <omgdi:waypoint x="685" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1na3ihb_di" bpmnElement="Flow_1na3ihb">
+        <omgdi:waypoint x="710" y="185" />
+        <omgdi:waypoint x="710" y="120" />
+        <omgdi:waypoint x="790" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0b6kipb_di" bpmnElement="Flow_0b6kipb">
+        <omgdi:waypoint x="710" y="235" />
+        <omgdi:waypoint x="710" y="288" />
+        <omgdi:waypoint x="822" y="288" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wuu0kj_di" bpmnElement="Flow_1wuu0kj">
+        <omgdi:waypoint x="890" y="120" />
+        <omgdi:waypoint x="1000" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_0okwxmx" bpmnElement="Flow_0u14rv0">
+        <omgdi:waypoint x="204" y="550" />
+        <omgdi:waypoint x="245" y="550" />
+        <omgdi:waypoint x="245" y="624" />
+        <omgdi:waypoint x="285" y="624" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_0egvd4d" bpmnElement="Flow_0ee328e">
+        <omgdi:waypoint x="385" y="624" />
+        <omgdi:waypoint x="430" y="624" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_16njyeh" bpmnElement="Flow_1720pln">
+        <omgdi:waypoint x="450" y="604" />
+        <omgdi:waypoint x="450" y="546" />
+        <omgdi:waypoint x="530" y="546" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_10khjdo" bpmnElement="Flow_1tgkkc8">
+        <omgdi:waypoint x="450" y="644" />
+        <omgdi:waypoint x="450" y="710" />
+        <omgdi:waypoint x="530" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15irt65_di" bpmnElement="Flow_15irt65">
+        <omgdi:waypoint x="630" y="546" />
+        <omgdi:waypoint x="643" y="546" />
+        <omgdi:waypoint x="643" y="550" />
+        <omgdi:waypoint x="655" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19i5jho_di" bpmnElement="Flow_19i5jho">
+        <omgdi:waypoint x="680" y="525" />
+        <omgdi:waypoint x="680" y="460" />
+        <omgdi:waypoint x="730" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19amm9d_di" bpmnElement="Flow_19amm9d">
+        <omgdi:waypoint x="680" y="575" />
+        <omgdi:waypoint x="680" y="624" />
+        <omgdi:waypoint x="762" y="624" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
