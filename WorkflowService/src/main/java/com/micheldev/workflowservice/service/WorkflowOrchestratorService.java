@@ -19,13 +19,13 @@ public class WorkflowOrchestratorService {
 
     private final RestClient restClient;
 
-    @Value("${services.identity.url}")
+    @Value("${rest.identity.service.url}")
     private String identityServiceUrl;
 
-    @Value("${services.policy.url}")
+    @Value("${soap.policy.service.url}")
     private String policyServiceUrl;
 
-    @Value("${services.claims.url}")
+    @Value("${graphql.claim.service.url}")
     private String claimsServiceUrl;
 
     public WorkflowOrchestratorService() {
@@ -118,8 +118,8 @@ public class WorkflowOrchestratorService {
                     .retrieve()
                     .body(String.class);
 
-            // Parse simple de la réponse SOAP pour extraire <valid>
-            return response != null && response.contains("<valid>true</valid>");
+            // Parse simple de la réponse SOAP pour extraire <valid> (avec ou sans namespace)
+            return response != null && response.matches("(?s).*<([a-zA-Z0-9]*:)?valid>true</([a-zA-Z0-9]*:)?valid>.*");
         } catch (Exception e) {
             log.error("Error calling Policy Service: {}", e.getMessage());
             return false;
