@@ -3,22 +3,25 @@ package com.micheldev.workflowservice.service;
 import com.micheldev.workflowservice.client.GraphQLClient;
 import com.micheldev.workflowservice.dto.*;
 
-import ch.qos.logback.core.net.server.Client;
-import lombok.extern.slf4j.Slf4j;
+import com.micheldev.workflowservice.grpc.ServiceDetectionFraudeGrpc; //
+import com.micheldev.workflowservice.grpc.RequeteFraude;
+import com.micheldev.workflowservice.grpc.ReponseFraude;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 @Service
 @Slf4j
@@ -26,6 +29,8 @@ public class WorkflowOrchestratorService {
 
     private final RestClient restClient;
     private final GraphQLClient graphQLClient;
+    private final ServiceDetectionFraudeGrpc.ServiceDetectionFraudeBlockingStub fraudStub;
+    private final ManagedChannel channel;
 
     @Value("${rest.identity.service.url}")
     private String identityServiceUrl;
@@ -33,9 +38,16 @@ public class WorkflowOrchestratorService {
     @Value("${soap.policy.service.url}")
     private String policyServiceUrl;
 
-    public WorkflowOrchestratorService(@Value("${graphql.claims.service.url}") String claimsServiceUrl) {
+    public WorkflowOrchestratorService(
+        @Value("${graphql.claims.service.url}") String claimsServiceUrl,
+        @Value("${grpc.fraud.service.host}") String grpcHost,
+        @Value("${grpc.fraud.service.port}") int grpcPort) {
         this.restClient = RestClient.create();
         this.graphQLClient = new GraphQLClient(claimsServiceUrl);
+        this.channel = ManagedChannelBuilder.forAddress(grpcHost, grpcPort)
+                .usePlaintext()
+                .build();
+        this.fraudStub = ServiceDetectionFraudeGrpc.newBlockingStub(channel);
     }
 
     /**
@@ -190,9 +202,82 @@ public class WorkflowOrchestratorService {
      * Orchestrates calls to various services to submit a claim.
      */
     public ClaimResponse submitClaim(ClaimRequest request) {
-        log.info("Submitting claim for policy: {}, type: {}, amount: {}",
-                request.getPolicyNumber(), request.getClaimType(), request.getClaimedAmount());
+        log.info("Submitting claim for policy: {}, type: {}, amount: {}",request.getPolicyNumber(), request.getClaimType(), request.getClaimedAmount());
+        
+        // Verifier l'identié du client
+        boolean identityValid = verifyIdentity(request.getClientId(), request.getNom());
+        if (!identityValid) {
+            log.warn("Identity verification failed for clientId: {}", request.getNom());
+            return ClaimResponse.builder()
+                .claimId("CLAIM-" + System.currentTimeMillis())
+                .clientId(request.getClientId())
+                .policyNumber(request.getPolicyNumber())
+                .claimType(request.getClaimType())
+                .amount(request.getClaimedAmount())
+                .comment(request.getCommentaire())
+                .status("REJETE")
+                .reason("IDENTITE NON VERIFIEE")
+                .createdAt(java.time.LocalDateTime.now().toString())
+                .build();
+        }
+        log.info("Identity verified successfully");
 
-        return null;
+        // 1. Vérifier la police via SOAP
+        boolean policyValid = verifyPolicy(request.getPolicyNumber());
+        if (!policyValid) {
+            log.warn("Policy verification failed for policyNumber: {}", request.getPolicyNumber());
+            return ClaimResponse.builder()
+                .claimId("CLAIM-" + System.currentTimeMillis())
+                .clientId(request.getClientId())
+                .policyNumber(request.getPolicyNumber())
+                .claimType(request.getClaimType())
+                .amount(request.getClaimedAmount())
+                .comment(request.getCommentaire())
+                .status("REJETE")
+                .reason("N° POLICE D'ASSURANCE NON VERIFIEE")
+                .createdAt(java.time.LocalDateTime.now().toString())
+                .build();
+        }
+        log.info("Policy verified successfully");
+
+        // 2. Vérifier la fraude via gRPC
+        RequeteFraude grpcRequest = RequeteFraude.newBuilder()
+                .setIdSinistre("GEN-ID-" + System.currentTimeMillis())
+                .setIdClient(request.getClientId()) 
+                .setTypeSinistre(request.getClaimType())
+                .setMontant(request.getClaimedAmount().doubleValue())
+                .setDescription(request.getCommentaire())
+                .build();
+        ReponseFraude response = fraudStub.verifierFraude(grpcRequest);
+
+        System.out.println("Niveau de risque : " + response.getNiveau());
+        System.out.println("Raison : " + response.getRaison());
+
+        if (response.getNiveauValue() >= 3) { // ELEVE
+             // Logique de rejet
+            log.warn("Fraud detected for claim. Niveau: {}, Raison: {}", response.getNiveau(), response.getRaison());
+            return ClaimResponse.builder()
+                .claimId("CLAIM-" + System.currentTimeMillis())
+                .clientId(request.getClientId())
+                .policyNumber(request.getPolicyNumber())
+                .claimType(request.getClaimType())
+                .amount(request.getClaimedAmount())
+                .comment(request.getCommentaire())
+                .status("REJETE")
+                .reason("SUSPICION DE FRAUDE: " + response.getRaison())
+                .createdAt(java.time.LocalDateTime.now().toString())
+                .build();
+        }
+        
+        return ClaimResponse.builder()
+                .claimId("CLAIM-" + System.currentTimeMillis())
+                .clientId(request.getClientId())
+                .policyNumber(request.getPolicyNumber())
+                .claimType(request.getClaimType())
+                .amount(request.getClaimedAmount())
+                .comment(request.getCommentaire())
+                .status("APPROUVE")
+                .createdAt(java.time.LocalDateTime.now().toString())
+                .build();
     }
 }

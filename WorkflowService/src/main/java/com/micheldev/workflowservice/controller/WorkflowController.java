@@ -6,6 +6,8 @@ import com.micheldev.workflowservice.dto.ClientInfoRequest;
 import com.micheldev.workflowservice.dto.ClientInfoResponse;
 import com.micheldev.workflowservice.service.WorkflowOrchestratorService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,6 @@ public class WorkflowController {
     @PostMapping("/claim")
     public ResponseEntity<ClaimResponse> submitClaim(@RequestBody ClaimRequest claimRequest) {
         ClaimResponse response = orchestratorService.submitClaim(claimRequest);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

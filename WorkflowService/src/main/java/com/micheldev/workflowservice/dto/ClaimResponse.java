@@ -19,6 +19,9 @@ public class ClaimResponse {
     
     @JsonProperty("clientId")
     private String clientId;
+
+    @JsonProperty("numeroPolice")
+    private String policyNumber;
     
     @JsonProperty("typeSinistre")
     private String claimType;
@@ -31,6 +34,9 @@ public class ClaimResponse {
     
     @JsonProperty("statut")
     private String status;
+
+    @JsonProperty("raison")
+    private String reason;
     
     @JsonProperty("dateCreation")
     private String createdAt;  // Changez en String pour correspondre au format GraphQL

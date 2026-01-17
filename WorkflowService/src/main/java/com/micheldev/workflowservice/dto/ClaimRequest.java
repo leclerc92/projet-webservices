@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClaimRequest {
+    private String clientId;
     private String nom;
     private String policyNumber;
     private String claimType;
