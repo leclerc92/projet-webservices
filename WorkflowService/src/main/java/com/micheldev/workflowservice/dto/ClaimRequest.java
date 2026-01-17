@@ -16,5 +16,5 @@ public class ClaimRequest {
     private String policyNumber;
     private String claimType;
     private BigDecimal claimedAmount;
-    private String description;
+    private String commentaire;
 }

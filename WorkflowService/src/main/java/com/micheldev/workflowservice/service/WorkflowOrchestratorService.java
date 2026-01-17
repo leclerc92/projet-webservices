@@ -1,23 +1,31 @@
 package com.micheldev.workflowservice.service;
 
+import com.micheldev.workflowservice.client.GraphQLClient;
 import com.micheldev.workflowservice.dto.*;
+
+import ch.qos.logback.core.net.server.Client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class WorkflowOrchestratorService {
 
     private final RestClient restClient;
+    private final GraphQLClient graphQLClient;
 
     @Value("${rest.identity.service.url}")
     private String identityServiceUrl;
@@ -25,11 +33,9 @@ public class WorkflowOrchestratorService {
     @Value("${soap.policy.service.url}")
     private String policyServiceUrl;
 
-    @Value("${graphql.claim.service.url}")
-    private String claimsServiceUrl;
-
-    public WorkflowOrchestratorService() {
+    public WorkflowOrchestratorService(@Value("${graphql.claims.service.url}") String claimsServiceUrl) {
         this.restClient = RestClient.create();
+        this.graphQLClient = new GraphQLClient(claimsServiceUrl);
     }
 
     /**
@@ -38,33 +44,35 @@ public class WorkflowOrchestratorService {
      * 2) SOAP - Verify policy
      * 3) GraphQL - Get claims
      */
-    public ClientInfoResponse getClientInfo(String name, String clientId, String policyNumber) {
-        log.info("Fetching client info for clientId: {}, name: {}, policyNumber: {}", clientId, name, policyNumber);
+    public ClientInfoResponse getClientInfo(ClientInfoRequest request) {
+        log.info("Fetching client info for clientId: {}, name: {}, policyNumber: {}", request.getClientId(), request.getName(), request.getPolicyNumber());
 
         // 1) Appel REST - Vérification identité
-        boolean identityValid = verifyIdentity(clientId, name);
+        boolean identityValid = verifyIdentity(request.getClientId(), request.getName());
         if (!identityValid) {
-            log.warn("Identity verification failed for clientId: {}", clientId);
+            log.warn("Identity verification failed for clientId: {}", request.getClientId());
             return null;
         }
         log.info("Identity verified successfully");
-
+        if (!identityValid) {
+           
+        }
         // 2) Appel SOAP - Vérification policy
-        boolean policyValid = verifyPolicy(policyNumber);
+        boolean policyValid = verifyPolicy(request.getPolicyNumber());
         if (!policyValid) {
-            log.warn("Policy verification failed for policyNumber: {}", policyNumber);
+            log.warn("Policy verification failed for policyNumber: {}", request.getPolicyNumber());
             return null;
         }
         log.info("Policy verified successfully");
 
         // 3) Appel GraphQL - Récupération des claims
-        List<ClaimResponse> claims = getClaims(clientId);
+        List<ClaimResponse> claims = getClaims(request.getClientId());
         log.info("Retrieved {} claims for client", claims.size());
 
         return ClientInfoResponse.builder()
-                .clientId(clientId)
-                .name(name)
-                .policyNumber(policyNumber)
+                .clientId(request.getClientId())
+                .name(request.getName())
+                .policyNumber(request.getPolicyNumber())
                 .claims(claims)
                 .build();
     }
@@ -134,44 +142,38 @@ public class WorkflowOrchestratorService {
     @SuppressWarnings("unchecked")
     private List<ClaimResponse> getClaims(String clientId) {
         try {
-            String graphqlQuery = """
-                {
-                    "query": "{ reclamations { id clientId typeSinistre montant statut dateCreation } }"
+            // Requête GraphQL avec variable typée
+            String query = """
+                query($clientId: String!) {
+                    reclamationByClientId(clientId: $clientId) {
+                        id
+                        clientId
+                        typeSinistre
+                        montant
+                        statut
+                        dateCreation
+                        commentaire
+                    }
                 }
                 """;
 
-            Map<String, Object> response = restClient.post()
-                    .uri(claimsServiceUrl)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(graphqlQuery)
-                    .retrieve()
-                    .body(Map.class);
+            // Exécuter la requête via le client GraphQL
+            List<Map<String, Object>> data = graphQLClient.executeAndExtract(query, Map.of("clientId", clientId), "reclamationByClientId");
 
-            List<ClaimResponse> claims = new ArrayList<>();
-            if (response != null && response.containsKey("data")) {
-                Map<String, Object> data = (Map<String, Object>) response.get("data");
-                List<Map<String, Object>> reclamations = (List<Map<String, Object>>) data.get("reclamations");
-
-                if (reclamations != null) {
-                    for (Map<String, Object> rec : reclamations) {
-                        // Filtre par clientId
-                        if (clientId.equals(rec.get("clientId"))) {
-                            claims.add(ClaimResponse.builder()
-                                    .claimId((String) rec.get("id"))
-                                    .status((String) rec.get("statut"))
-                                    .message((String) rec.get("typeSinistre"))
-                                    .claimedAmount(rec.get("montant") != null
-                                            ? new BigDecimal(rec.get("montant").toString())
-                                            : null)
-                                    .createdAt(LocalDateTime.now())
-                                    .build());
-                        }
-                    }
-                }
+            if (data == null) {
+                return new ArrayList<>();
             }
+
+
+            ObjectMapper objectMapper = new ObjectMapper();            
+            List<ClaimResponse> claims = data.stream()
+                    .map(reclamation -> objectMapper.convertValue(reclamation, ClaimResponse.class))
+                    .collect(Collectors.toList());
+            // Mapper les données vers ClaimResponse
             return claims;
+
         } catch (Exception e) {
-            log.error("Error calling Claims Service: {}", e.getMessage());
+            log.error("Error calling Claims Service: {}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }

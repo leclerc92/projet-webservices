@@ -6,5 +6,4 @@ import lombok.Data;
 public class IdentityRequest {
     private String customerId;
     private String fullName;
-    private String birthDate;
 }

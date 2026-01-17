@@ -2,6 +2,7 @@ package com.micheldev.workflowservice.controller;
 
 import com.micheldev.workflowservice.dto.ClaimRequest;
 import com.micheldev.workflowservice.dto.ClaimResponse;
+import com.micheldev.workflowservice.dto.ClientInfoRequest;
 import com.micheldev.workflowservice.dto.ClientInfoResponse;
 import com.micheldev.workflowservice.service.WorkflowOrchestratorService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,9 @@ public class WorkflowController {
             @RequestParam String clientId,
             @RequestParam String policyNumber) {
 
-        ClientInfoResponse response = orchestratorService.getClientInfo(name, clientId, policyNumber);
+
+        ClientInfoRequest clientInfoRequest = new ClientInfoRequest(name, clientId, policyNumber);
+        ClientInfoResponse response = orchestratorService.getClientInfo(clientInfoRequest);
         return ResponseEntity.ok(response);
     }
 
