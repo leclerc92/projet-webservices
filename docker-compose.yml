@@ -76,6 +76,21 @@ services:
     networks:
       - insurance-network
 
+  # ==========================================
+  # Frontend - Interface utilisateur
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - workflow-service
+    networks:
+      - insurance-network
+
 networks:
   insurance-network:
     driver: bridge

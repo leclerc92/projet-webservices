@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Workflow - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
+            Insurance Workflow Dashboard
+        </h1>
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <!-- Section GET Client Info -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <span class="bg-blue-500 text-white px-2 py-1 rounded text-sm mr-2">GET</span>
+                    Rechercher un client
+                </h2>
+
+                <form id="getClientForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Nom du client</label>
+                        <input type="text" id="clientName" value="John"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Client ID</label>
+                        <input type="text" id="clientId" value="CLI-123"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Num&eacute;ro de police</label>
+                        <input type="text" id="policyNumber" value="A12345"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Doit commencer par "A" pour &ecirc;tre valide</p>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                        Rechercher
+                    </button>
+                </form>
+
+                <div id="getResult" class="mt-4 hidden">
+                    <div id="clientInfo" class="bg-blue-50 p-3 rounded-md mb-4"></div>
+                    <h3 class="text-sm font-medium text-gray-600 mb-2">R&eacute;clamations :</h3>
+                    <div id="claimsTable" class="overflow-auto max-h-64"></div>
+                    <div id="getError" class="hidden bg-red-50 p-3 rounded-md text-sm text-red-800"></div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="text-sm font-medium text-gray-500 mb-2 text-center">Workflow</h3>
+                    <img src="getWorkflow.png" alt="Workflow GET" class="w-full rounded-md">
+                </div>
+            </div>
+
+            <!-- Section POST Submit Claim -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <span class="bg-green-500 text-white px-2 py-1 rounded text-sm mr-2">POST</span>
+                    Soumettre une r&eacute;clamation
+                </h2>
+
+                <form id="postClaimForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Nom du client</label>
+                        <input type="text" id="claimNom" value="John"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Client ID</label>
+                        <input type="text" id="claimClientId" value="CLI-123"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Num&eacute;ro de police</label>
+                        <input type="text" id="claimPolicyNumber" value="A12345"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Type de sinistre</label>
+                        <select id="claimType"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="Auto">Auto</option>
+                            <option value="Habitation">Habitation</option>
+                            <option value="Sante">Sant&eacute;</option>
+                            <option value="Vie">Vie</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Montant r&eacute;clam&eacute; (&euro;)</label>
+                        <input type="number" id="claimedAmount" value="1500"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Commentaire</label>
+                        <textarea id="claimCommentaire" rows="2" placeholder="D&eacute;crivez le sinistre..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                        Soumettre
+                    </button>
+                </form>
+
+                <div id="postResult" class="mt-4 hidden">
+                    <div id="postResultContent"></div>
+                    <div id="postError" class="hidden bg-red-50 p-3 rounded-md text-sm text-red-800"></div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="text-sm font-medium text-gray-500 mb-2 text-center">Workflow</h3>
+                    <img src="postWorkflow.png" alt="Workflow POST" class="w-full rounded-md">
+                </div>
+            </div>
+        </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8082/api/workflow';
+
+        // Fonction pour formater la date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Fonction pour obtenir la classe CSS du statut
+        function getStatusClass(status) {
+            const statusUpper = (status || '').toUpperCase();
+            if (statusUpper === 'APPROUVE') {
+                return 'bg-green-100 text-green-800';
+            } else if (statusUpper === 'REJETE') {
+                return 'bg-red-100 text-red-800';
+            } else if (statusUpper === 'EN_COURS') {
+                return 'bg-yellow-100 text-yellow-800';
+            }
+            return 'bg-gray-100 text-gray-800';
+        }
+
+        // GET Client Info
+        document.getElementById('getClientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('clientName').value;
+            const clientId = document.getElementById('clientId').value;
+            const policyNumber = document.getElementById('policyNumber').value;
+
+            const resultDiv = document.getElementById('getResult');
+            const clientInfoDiv = document.getElementById('clientInfo');
+            const claimsTableDiv = document.getElementById('claimsTable');
+            const errorDiv = document.getElementById('getError');
+
+            resultDiv.classList.remove('hidden');
+            clientInfoDiv.innerHTML = '<p class="text-gray-500">Chargement...</p>';
+            claimsTableDiv.innerHTML = '';
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch(
+                    `${API_BASE}/client?name=${encodeURIComponent(name)}&clientId=${encodeURIComponent(clientId)}&policyNumber=${encodeURIComponent(policyNumber)}`
+                );
+
+                const data = await response.json();
+
+                if (response.ok && data) {
+                    // Afficher les infos client
+                    clientInfoDiv.innerHTML = `
+                        <div class="grid grid-cols-3 gap-2 text-sm">
+                            <div><span class="font-medium text-gray-600">Nom:</span> <span class="text-gray-800">${data.name || '-'}</span></div>
+                            <div><span class="font-medium text-gray-600">Client ID:</span> <span class="text-gray-800">${data.clientId || '-'}</span></div>
+                            <div><span class="font-medium text-gray-600">Police:</span> <span class="text-gray-800">${data.policyNumber || '-'}</span></div>
+                        </div>
+                    `;
+
+                    // Trier les claims par date (plus recent en premier)
+                    const claims = data.claims || [];
+                    claims.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+
+                    if (claims.length > 0) {
+                        let tableHtml = `
+                            <table class="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="text-left p-2 border-b font-medium text-gray-600">Date</th>
+                                        <th class="text-left p-2 border-b font-medium text-gray-600">Type</th>
+                                        <th class="text-right p-2 border-b font-medium text-gray-600">Montant</th>
+                                        <th class="text-center p-2 border-b font-medium text-gray-600">Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        claims.forEach(claim => {
+                            tableHtml += `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-2 border-b text-gray-700">${formatDate(claim.dateCreation)}</td>
+                                    <td class="p-2 border-b text-gray-700">${claim.typeSinistre || '-'}</td>
+                                    <td class="p-2 border-b text-gray-700 text-right">${claim.montant ? claim.montant.toLocaleString('fr-FR') + ' €' : '-'}</td>
+                                    <td class="p-2 border-b text-center">
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(claim.statut)}">${claim.statut || '-'}</span>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+
+                        tableHtml += '</tbody></table>';
+                        claimsTableDiv.innerHTML = tableHtml;
+                    } else {
+                        claimsTableDiv.innerHTML = '<p class="text-gray-500 text-sm">Aucune reclamation trouvee</p>';
+                    }
+                } else {
+                    clientInfoDiv.innerHTML = '';
+                    claimsTableDiv.innerHTML = '';
+                    errorDiv.textContent = 'Verification echouee (identite ou police invalide)';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                clientInfoDiv.innerHTML = '';
+                claimsTableDiv.innerHTML = '';
+                errorDiv.textContent = `Erreur: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // POST Submit Claim
+        document.getElementById('postClaimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const claimData = {
+                nom: document.getElementById('claimNom').value,
+                clientId: document.getElementById('claimClientId').value,
+                policyNumber: document.getElementById('claimPolicyNumber').value,
+                claimType: document.getElementById('claimType').value,
+                claimedAmount: parseFloat(document.getElementById('claimedAmount').value),
+                commentaire: document.getElementById('claimCommentaire').value
+            };
+
+            const resultDiv = document.getElementById('postResult');
+            const resultContent = document.getElementById('postResultContent');
+            const errorDiv = document.getElementById('postError');
+
+            resultDiv.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            resultContent.innerHTML = '<p class="text-gray-500">Envoi en cours...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE}/claim`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(claimData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data) {
+                    const isApproved = (data.statut || '').toUpperCase() === 'APPROUVE';
+                    const statusBg = isApproved ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+                    const statusText = isApproved ? 'text-green-800' : 'text-red-800';
+
+                    resultContent.innerHTML = `
+                        <div class="${statusBg} border rounded-md p-4 mb-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold ${statusText} text-lg">${data.statut || '-'}</span>
+                                <span class="text-xs text-gray-500">${formatDate(data.dateCreation)}</span>
+                            </div>
+                            ${data.raison ? `<p class="${statusText} text-sm">${data.raison}</p>` : ''}
+                        </div>
+                        <div class="bg-gray-50 rounded-md p-3">
+                            <h4 class="text-sm font-medium text-gray-600 mb-2">Détails de la réclamation</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div><span class="font-medium text-gray-600">ID:</span> <span class="text-gray-800">${data.id || '-'}</span></div>
+                                <div><span class="font-medium text-gray-600">Client:</span> <span class="text-gray-800">${data.clientId || '-'}</span></div>
+                                <div><span class="font-medium text-gray-600">Police:</span> <span class="text-gray-800">${data.numeroPolice || '-'}</span></div>
+                                <div><span class="font-medium text-gray-600">Type:</span> <span class="text-gray-800">${data.typeSinistre || '-'}</span></div>
+                                <div><span class="font-medium text-gray-600">Montant:</span> <span class="text-gray-800">${data.montant ? data.montant.toLocaleString('fr-FR') + ' €' : '-'}</span></div>
+                            </div>
+                            ${data.commentaire ? `<p class="mt-2 text-sm text-gray-600"><span class="font-medium">Commentaire:</span> ${data.commentaire}</p>` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultContent.innerHTML = '';
+                    errorDiv.textContent = 'Erreur lors de la soumission';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                resultContent.innerHTML = '';
+                errorDiv.textContent = `Erreur: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

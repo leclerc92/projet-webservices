@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/workflow")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class WorkflowController {
 
