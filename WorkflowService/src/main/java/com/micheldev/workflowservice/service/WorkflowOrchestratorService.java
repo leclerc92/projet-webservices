@@ -163,6 +163,7 @@ public class WorkflowOrchestratorService {
                         typeSinistre
                         montant
                         statut
+                        raison
                         dateCreation
                         commentaire
                     }
@@ -208,7 +209,7 @@ public class WorkflowOrchestratorService {
         boolean identityValid = verifyIdentity(request.getClientId(), request.getNom());
         if (!identityValid) {
             log.warn("Identity verification failed for clientId: {}", request.getNom());
-            return ClaimResponse.builder()
+            ClaimResponse reclamation = ClaimResponse.builder()
                 .claimId("CLAIM-" + System.currentTimeMillis())
                 .clientId(request.getClientId())
                 .policyNumber(request.getPolicyNumber())
@@ -219,6 +220,8 @@ public class WorkflowOrchestratorService {
                 .reason("IDENTITE NON VERIFIEE")
                 .createdAt(java.time.LocalDateTime.now().toString())
                 .build();
+            storeClaim(reclamation);
+            return reclamation;
         }
         log.info("Identity verified successfully");
 
@@ -226,7 +229,7 @@ public class WorkflowOrchestratorService {
         boolean policyValid = verifyPolicy(request.getPolicyNumber());
         if (!policyValid) {
             log.warn("Policy verification failed for policyNumber: {}", request.getPolicyNumber());
-            return ClaimResponse.builder()
+            ClaimResponse reclamation = ClaimResponse.builder()
                 .claimId("CLAIM-" + System.currentTimeMillis())
                 .clientId(request.getClientId())
                 .policyNumber(request.getPolicyNumber())
@@ -237,6 +240,8 @@ public class WorkflowOrchestratorService {
                 .reason("N° POLICE D'ASSURANCE NON VERIFIEE")
                 .createdAt(java.time.LocalDateTime.now().toString())
                 .build();
+            storeClaim(reclamation);
+            return reclamation;
         }
         log.info("Policy verified successfully");
 
@@ -256,7 +261,7 @@ public class WorkflowOrchestratorService {
         if (response.getNiveauValue() >= 3) { // ELEVE
              // Logique de rejet
             log.warn("Fraud detected for claim. Niveau: {}, Raison: {}", response.getNiveau(), response.getRaison());
-            return ClaimResponse.builder()
+            ClaimResponse reclamation = ClaimResponse.builder()
                 .claimId("CLAIM-" + System.currentTimeMillis())
                 .clientId(request.getClientId())
                 .policyNumber(request.getPolicyNumber())
@@ -267,9 +272,12 @@ public class WorkflowOrchestratorService {
                 .reason("SUSPICION DE FRAUDE: " + response.getRaison())
                 .createdAt(java.time.LocalDateTime.now().toString())
                 .build();
+
+            storeClaim(reclamation);
+            return reclamation;
         }
         
-        return ClaimResponse.builder()
+        ClaimResponse reclamation = ClaimResponse.builder()
                 .claimId("CLAIM-" + System.currentTimeMillis())
                 .clientId(request.getClientId())
                 .policyNumber(request.getPolicyNumber())
@@ -277,7 +285,49 @@ public class WorkflowOrchestratorService {
                 .amount(request.getClaimedAmount())
                 .comment(request.getCommentaire())
                 .status("APPROUVE")
+                .reason("-")
                 .createdAt(java.time.LocalDateTime.now().toString())
                 .build();
+        storeClaim(reclamation);
+        return reclamation;
     }
+
+    public void storeClaim(ClaimResponse claim) {
+        try{
+            String mutation = """
+                mutation($id: ID!, $clientId: String!, $typeSinistre: String!, $montant: Float!, $statut: String!, $raison: String!, $dateCreation: String!, $commentaire: String) {
+                    addReclamation(input: {
+                        id: $id,
+                        clientId: $clientId,
+                        typeSinistre: $typeSinistre,
+                        montant: $montant,
+                        statut: $statut,
+                        raison: $raison,
+                        dateCreation: $dateCreation,
+                        commentaire: $commentaire
+                    }) {
+                        id
+                    }
+                }
+                """;
+
+            Map<String, Object> variables = Map.of(
+                "id", claim.getClaimId(),
+                "clientId", claim.getClientId(),
+                "typeSinistre", claim.getClaimType(),
+                "montant", claim.getAmount().doubleValue(),
+                "statut", claim.getStatus(),
+                "raison", claim.getReason(),
+                "dateCreation", java.time.LocalDateTime.now().toString(),
+                "commentaire", claim.getComment()
+            );
+
+            graphQLClient.execute(mutation, variables);
+            log.info("Claim stored successfully in Claim Tracking Service");
+        } catch (Exception e) {
+            log.error("Error storing claim: {}", e.getMessage(), e);
+
+        }
+    }
+
 }

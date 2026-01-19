@@ -37,6 +37,21 @@ services:
       - "4000:4000"
     networks:
       - insurance-network
+    depends_on:
+      - mongo
+
+  # ==========================================
+  # Service MongoDB - Base de données pour GraphQL
+  # ==========================================
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - insurance-network
 
   # ==========================================
   # Service gRPC - Détection de fraude
@@ -90,6 +105,9 @@ services:
       - workflow-service
     networks:
       - insurance-network
+
+volumes:
+  mongo-data:
 
 networks:
   insurance-network:

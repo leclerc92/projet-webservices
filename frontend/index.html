@@ -195,6 +195,7 @@
                                         <th class="text-left p-2 border-b font-medium text-gray-600">Type</th>
                                         <th class="text-right p-2 border-b font-medium text-gray-600">Montant</th>
                                         <th class="text-center p-2 border-b font-medium text-gray-600">Statut</th>
+                                        <th class="text-center p-2 border-b font-medium text-gray-600">Raison</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -209,7 +210,7 @@
                                     <td class="p-2 border-b text-center">
                                         <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(claim.statut)}">${claim.statut || '-'}</span>
                                     </td>
-                                </tr>
+                                    <td class="p-2 border-b text-center text-gray-700">${claim.raison || '-'}</td>
                             `;
                         });
 
