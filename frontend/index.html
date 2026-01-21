@@ -172,7 +172,7 @@
 
                 const data = await response.json();
 
-                if (response.ok && data) {
+                if (response.ok && data && !data.errorMessage) {
                     // Afficher les infos client
                     clientInfoDiv.innerHTML = `
                         <div class="grid grid-cols-3 gap-2 text-sm">
@@ -222,7 +222,7 @@
                 } else {
                     clientInfoDiv.innerHTML = '';
                     claimsTableDiv.innerHTML = '';
-                    errorDiv.textContent = 'Verification echouee (identite ou police invalide)';
+                    errorDiv.textContent = `${data.errorMessage}`;
                     errorDiv.classList.remove('hidden');
                 }
             } catch (error) {

@@ -12,7 +12,7 @@ public class IdentityController {
     public IdentityResponse verifyIdentity(@RequestBody IdentityRequest request) {
         System.out.println("Demande reçue pour : " + request.getFullName());
 
-        if ("INVALID".equals(request.getCustomerId())) {
+        if (!request.getCustomerId().contains("CLI")) {
             return new IdentityResponse(false, "Client inconnu ou blacklisté.");
         }
 

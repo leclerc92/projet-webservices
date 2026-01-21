@@ -16,4 +16,5 @@ public class ClientInfoResponse {
     private String name;
     private String policyNumber;
     private List<ClaimResponse> claims;
+    private String errorMessage;
 }

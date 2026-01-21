@@ -61,19 +61,26 @@ public class WorkflowOrchestratorService {
 
         // 1) Appel REST - Vérification identité
         boolean identityValid = verifyIdentity(request.getClientId(), request.getName());
+
         if (!identityValid) {
             log.warn("Identity verification failed for clientId: {}", request.getClientId());
-            return null;
-        }
-        log.info("Identity verified successfully");
-        if (!identityValid) {
-           
+            return ClientInfoResponse.builder()
+                    .clientId(request.getClientId())
+                    .name(request.getName())
+                    .policyNumber(request.getPolicyNumber())
+                    .errorMessage("Identifiant client invalid")
+                    .build();
         }
         // 2) Appel SOAP - Vérification policy
         boolean policyValid = verifyPolicy(request.getPolicyNumber());
         if (!policyValid) {
             log.warn("Policy verification failed for policyNumber: {}", request.getPolicyNumber());
-            return null;
+            return ClientInfoResponse.builder()
+                    .clientId(request.getClientId())
+                    .name(request.getName())
+                    .policyNumber(request.getPolicyNumber())
+                    .errorMessage("Numéro de police du client invalid")
+                    .build();
         }
         log.info("Policy verified successfully");
 
