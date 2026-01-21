@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const reclamationSchema = new mongoose.Schema({
-    id: String,
     clientId: String,
     typeSinistre: String,
     montant: Number,

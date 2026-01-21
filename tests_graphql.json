@@ -1,0 +1,78 @@
+{
+	"info": {
+		"_postman_id": "graphql-date-tests",
+		"name": "Tests GraphQL - Filtres Dates",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Reclamation Before Date",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getBefore($date: String!) {\n    reclamationBeforeDate(dateCreation: $date) {\n        id\n        clientId\n        dateCreation\n        statut\n        montant\n    }\n}",
+						"variables": "{\n  \"date\": \"2024-01-01\"\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/graphql",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "4000",
+					"path": ["graphql"]
+				}
+			}
+		},
+		{
+			"name": "Reclamation On Date",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getOn($date: String!) {\n    reclamationOnDate(dateCreation: $date) {\n        id\n        clientId\n        dateCreation\n        statut\n        raison\n    }\n}",
+						"variables": "{\n  \"date\": \"2024-01-15\"\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/graphql",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "4000",
+					"path": ["graphql"]
+				}
+			}
+		},
+		{
+			"name": "Reclamation After Date",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getAfter($date: String!) {\n    reclamationAfterDate(dateCreation: $date) {\n        id\n        clientId\n        dateCreation\n        statut\n        typeSinistre\n    }\n}",
+						"variables": "{\n  \"date\": \"2024-01-01\"\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/graphql",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "4000",
+					"path": ["graphql"]
+				}
+			}
+		}
+	]
+}

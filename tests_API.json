@@ -1,0 +1,99 @@
+{
+	"info": {
+		"_postman_id": "corrected-webservices-test",
+		"name": "Projet WebServices - Tests Unitaires & Workflow",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Orchestrateur (Workflow)",
+			"item": [
+				{
+					"name": "Get Client Info",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8082/api/workflow/client?name=John&clientId=CLI-123&policyNumber=A12345",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8082",
+							"path": ["api", "workflow", "client"],
+							"query": [
+								{ "key": "name", "value": "John" },
+								{ "key": "clientId", "value": "CLI-123" },
+								{ "key": "policyNumber", "value": "A12345" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Submit Claim",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clientId\": \"CLI-123\",\n  \"nom\": \"John\",\n  \"policyNumber\": \"A12345\",\n  \"claimType\": \"Vol\",\n  \"claimedAmount\": 15000,\n  \"commentaire\": \"Test\"\n}"
+						},
+						"url": "http://localhost:8082/api/workflow/claim"
+					}
+				}
+			]
+		},
+		{
+			"name": "2. REST Service (Identity)",
+			"item": [
+				{
+					"name": "Verify Identity",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"John Doe\",\n    \"customerId\": \"CLI-123\"\n}"
+						},
+						"url": "http://localhost:8080/api/identity/verify",
+						"description": "Vérifie directement le microservice Identity."
+					}
+				}
+			]
+		},
+		{
+			"name": "3. SOAP Service (Policy)",
+			"item": [
+				{
+					"name": "Get Policy (XML)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "text/xml" }],
+						"body": {
+							"mode": "raw",
+							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:soap=\"http://www.example.com/soap-api\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <soap:getPolicyRequest>\n         <soap:policyNumber>A12345</soap:policyNumber>\n         <soap:claimType>Vol</soap:claimType>\n      </soap:getPolicyRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
+						},
+						"url": "http://localhost:8081/ws"
+					}
+				}
+			]
+		},
+		{
+			"name": "4. GraphQL Service (Claims)",
+			"item": [
+				{
+					"name": "List Claims",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  reclamations {\n    id\n    clientId\n    montant\n    statut\n  }\n}",
+								"variables": {}
+							}
+						},
+						"url": "http://localhost:4000/graphql"
+					}
+				}
+			]
+		}
+	]
+}
