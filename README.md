@@ -36,6 +36,13 @@ Une fois les conteneurs lancés, voici les points d'entrée pour accéder à l'i
 | **Fraud Service** | gRPC | `50051` | `localhost:50051` | Détection de fraude.                                                                                              |
 | **MongoDB** | Base de données | `27017` | `mongodb://localhost:27017` | Base de données NoSQL pour le stockage des réclamations (utilisée par le service GraphQL).                        |
 
+## Documentation API (Swagger)
+
+La documentation interactive de l'API est disponible via Swagger UI :
+
+- **Swagger UI** : [http://localhost:8082/swagger-ui/index.html](http://localhost:8082/swagger-ui/index.html)
+- **OpenAPI JSON** : [http://localhost:8082/v3/api-docs](http://localhost:8082/v3/api-docs)
+
 ## Arrêter l'application
 
 Pour arrêter et supprimer les conteneurs :
