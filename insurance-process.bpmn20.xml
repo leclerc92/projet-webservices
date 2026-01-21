@@ -1,236 +1,346 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:flowable="http://flowable.org/bpmn" targetNamespace="http://www.flowable.org/processdef" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.10.1">
-  <process id="insuranceClaimProcess" name="Insurance Claim Process" isExecutable="true">
-    <startEvent id="startEvent" name="Declaration de prejudice" />
-    <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="verifyIdentityTask" />
-    <serviceTask id="verifyIdentityTask" name="Vérifier Identité (REST)" flowable:delegateExpression="${verifyIdentityDelegate}" />
-    <sequenceFlow id="flow2" sourceRef="verifyIdentityTask" targetRef="identityDecisionGateway" />
-    <exclusiveGateway id="identityDecisionGateway" name="Identité Valide ?" />
-    <sequenceFlow id="flow3" sourceRef="identityDecisionGateway" targetRef="checkPolicyTask">
-      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == true}</conditionExpression>
-    </sequenceFlow>
-    <sequenceFlow id="flow4" sourceRef="identityDecisionGateway" targetRef="rejectionEndEvent">
-      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == false}</conditionExpression>
-    </sequenceFlow>
-    <serviceTask id="checkPolicyTask" name="Vérifier Police (SOAP)" flowable:delegateExpression="${checkPolicyDelegate}">
-      <outgoing>Flow_0hv9znx</outgoing>
-    </serviceTask>
-    <endEvent id="rejectionEndEvent" name="Rejeté (mauvaise Identité)" />
-    <exclusiveGateway id="Gateway_1lppy3r">
-      <incoming>Flow_0hv9znx</incoming>
-      <outgoing>Flow_1na3ihb</outgoing>
-      <outgoing>Flow_0b6kipb</outgoing>
-    </exclusiveGateway>
-    <sequenceFlow id="Flow_0hv9znx" sourceRef="checkPolicyTask" targetRef="Gateway_1lppy3r" />
-    <serviceTask id="Activity_1v8to5s" name="Vérifier Fraude (gRPC)">
-      <incoming>Flow_1na3ihb</incoming>
-      <outgoing>Flow_1wuu0kj</outgoing>
-    </serviceTask>
-    <sequenceFlow id="Flow_1na3ihb" sourceRef="Gateway_1lppy3r" targetRef="Activity_1v8to5s" />
-    <endEvent id="Event_0zitl9l" name="Rejeté Police">
-      <incoming>Flow_0b6kipb</incoming>
-    </endEvent>
-    <sequenceFlow id="Flow_0b6kipb" sourceRef="Gateway_1lppy3r" targetRef="Event_0zitl9l" />
-    <serviceTask id="Activity_1eojis4" name="Stocker demande">
-      <incoming>Flow_1wuu0kj</incoming>
-    </serviceTask>
-    <sequenceFlow id="Flow_1wuu0kj" sourceRef="Activity_1v8to5s" targetRef="Activity_1eojis4" />
-    <startEvent id="Event_0743o5s" name="demande historique">
-      <outgoing>Flow_0u14rv0</outgoing>
-    </startEvent>
-    <serviceTask id="Activity_15ae6gi" name="Vérifier Identité (REST)">
-      <incoming>Flow_0u14rv0</incoming>
-      <outgoing>Flow_0ee328e</outgoing>
-    </serviceTask>
-    <exclusiveGateway id="Gateway_03vszk4" name="Identité Valide ?">
-      <incoming>Flow_0ee328e</incoming>
-      <outgoing>Flow_1720pln</outgoing>
-      <outgoing>Flow_1tgkkc8</outgoing>
-    </exclusiveGateway>
-    <serviceTask id="Activity_1cwpy2f" name="Vérifier Police (SOAP)">
-      <incoming>Flow_1720pln</incoming>
-      <outgoing>Flow_15irt65</outgoing>
-    </serviceTask>
-    <endEvent id="Event_1ma6epr" name="Rejeté (mauvaise Identité)">
-      <incoming>Flow_1tgkkc8</incoming>
-    </endEvent>
-    <sequenceFlow id="Flow_0u14rv0" sourceRef="Event_0743o5s" targetRef="Activity_15ae6gi" />
-    <sequenceFlow id="Flow_0ee328e" sourceRef="Activity_15ae6gi" targetRef="Gateway_03vszk4" />
-    <sequenceFlow id="Flow_1720pln" sourceRef="Gateway_03vszk4" targetRef="Activity_1cwpy2f">
-      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == true}</conditionExpression>
-    </sequenceFlow>
-    <sequenceFlow id="Flow_1tgkkc8" sourceRef="Gateway_03vszk4" targetRef="Event_1ma6epr">
-      <conditionExpression xsi:type="tFormalExpression">${isIdentityValid == false}</conditionExpression>
-    </sequenceFlow>
-    <serviceTask id="Activity_1derlw8" name="Recupérer historique">
-      <incoming>Flow_19i5jho</incoming>
-    </serviceTask>
-    <sequenceFlow id="Flow_15irt65" sourceRef="Activity_1cwpy2f" targetRef="Gateway_1pzlckv" />
-    <exclusiveGateway id="Gateway_1pzlckv">
-      <incoming>Flow_15irt65</incoming>
-      <outgoing>Flow_19i5jho</outgoing>
-      <outgoing>Flow_19amm9d</outgoing>
-    </exclusiveGateway>
-    <sequenceFlow id="Flow_19i5jho" sourceRef="Gateway_1pzlckv" targetRef="Activity_1derlw8" />
-    <endEvent id="Event_1ec3e0g" name="Rejeté Police">
-      <incoming>Flow_19amm9d</incoming>
-    </endEvent>
-    <sequenceFlow id="Flow_19amm9d" sourceRef="Gateway_1pzlckv" targetRef="Event_1ec3e0g" />
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://www.flowable.org/processdef">
+
+  <collaboration id="Collaboration_1">
+    <participant id="Participant_GET" name="GET /api/workflow/client - Récupération infos client" processRef="getClientWorkflow" />
+    <participant id="Participant_POST" name="POST /api/workflow/claim - Soumission réclamation" processRef="postClaimWorkflow" />
+  </collaboration>
+
+  <!-- ==================== WORKFLOW GET ==================== -->
+  <process id="getClientWorkflow" name="GET /api/workflow/client" isExecutable="false">
+    <laneSet id="LaneSet_GET">
+      <lane id="Lane_GET" name="GET Workflow" />
+    </laneSet>
+
+    <startEvent id="get_start" name="Frontend&#10;GET Request" />
+    <serviceTask id="get_rest" name="REST&#10;Vérifier Identité&#10;(Port 8080)" />
+    <exclusiveGateway id="get_identity_gw" name="Identité&#10;Valide ?" />
+    <serviceTask id="get_soap" name="SOAP&#10;Vérifier Police&#10;(Port 8081)" />
+    <exclusiveGateway id="get_policy_gw" name="Police&#10;Valide ?" />
+    <serviceTask id="get_graphql" name="GraphQL&#10;Récupérer Client&#10;(Port 4000)" />
+    <dataStoreReference id="get_mongo" name="MongoDB&#10;(Claims DB)" />
+    <endEvent id="get_success" name="Retour Client&#10;(Infos + Historique)" />
+    <endEvent id="get_reject_id" name="Erreur 400&#10;Identité Invalide" />
+    <endEvent id="get_reject_pol" name="Erreur 400&#10;Police Invalide" />
+
+    <sequenceFlow id="get_f1" sourceRef="get_start" targetRef="get_rest" />
+    <sequenceFlow id="get_f2" sourceRef="get_rest" targetRef="get_identity_gw" />
+    <sequenceFlow id="get_f3" name="Oui" sourceRef="get_identity_gw" targetRef="get_soap" />
+    <sequenceFlow id="get_f4" name="Non" sourceRef="get_identity_gw" targetRef="get_reject_id" />
+    <sequenceFlow id="get_f5" sourceRef="get_soap" targetRef="get_policy_gw" />
+    <sequenceFlow id="get_f6" name="Oui" sourceRef="get_policy_gw" targetRef="get_graphql" />
+    <sequenceFlow id="get_f7" name="Non" sourceRef="get_policy_gw" targetRef="get_reject_pol" />
+    <sequenceFlow id="get_f8" sourceRef="get_graphql" targetRef="get_success" />
+
+    <dataOutputAssociation id="get_data_assoc">
+      <sourceRef>get_graphql</sourceRef>
+      <targetRef>get_mongo</targetRef>
+    </dataOutputAssociation>
   </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_insuranceClaimProcess">
-    <bpmndi:BPMNPlane id="BPMNPlane_insuranceClaimProcess" bpmnElement="insuranceClaimProcess">
-      <bpmndi:BPMNShape id="BPMNShape_verifyIdentityTask" bpmnElement="verifyIdentityTask">
-        <omgdc:Bounds x="285" y="248" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_identityDecisionGateway" bpmnElement="identityDecisionGateway" isMarkerVisible="true">
-        <omgdc:Bounds x="430" y="268" width="40" height="40" />
-        <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="411" y="308" width="79" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_checkPolicyTask" bpmnElement="checkPolicyTask">
-        <omgdc:Bounds x="530" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_rejectionEndEvent" bpmnElement="rejectionEndEvent">
-        <omgdc:Bounds x="530" y="360" width="28" height="28" />
-        <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="507" y="396" width="86" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1lppy3r_di" bpmnElement="Gateway_1lppy3r" isMarkerVisible="true">
-        <omgdc:Bounds x="685" y="185" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0c5j4un" bpmnElement="Activity_1v8to5s">
-        <omgdc:Bounds x="790" y="80" width="100" height="80" />
+
+  <!-- ==================== WORKFLOW POST ==================== -->
+  <process id="postClaimWorkflow" name="POST /api/workflow/claim" isExecutable="false">
+    <laneSet id="LaneSet_POST">
+      <lane id="Lane_POST" name="POST Workflow" />
+    </laneSet>
+
+    <startEvent id="post_start" name="Frontend&#10;POST Request" />
+    <serviceTask id="post_rest" name="REST&#10;Vérifier Identité&#10;(Port 8080)" />
+    <exclusiveGateway id="post_identity_gw" name="Identité&#10;Valide ?" />
+    <serviceTask id="post_soap" name="SOAP&#10;Vérifier Police&#10;(Port 8081)" />
+    <exclusiveGateway id="post_policy_gw" name="Police&#10;Valide ?" />
+    <serviceTask id="post_grpc" name="gRPC&#10;Détection Fraude&#10;(Port 50051)" />
+    <serviceTask id="post_graphql" name="GraphQL&#10;Stocker Réclamation&#10;(Port 4000)" />
+    <dataStoreReference id="post_mongo" name="MongoDB&#10;(Claims DB)" />
+    <endEvent id="post_success" name="Retour Client&#10;(Réclamation créée)" />
+    <endEvent id="post_reject_id" name="Erreur 400&#10;Identité Invalide" />
+    <endEvent id="post_reject_pol" name="Erreur 400&#10;Police Invalide" />
+
+    <sequenceFlow id="post_f1" sourceRef="post_start" targetRef="post_rest" />
+    <sequenceFlow id="post_f2" sourceRef="post_rest" targetRef="post_identity_gw" />
+    <sequenceFlow id="post_f3" name="Oui" sourceRef="post_identity_gw" targetRef="post_soap" />
+    <sequenceFlow id="post_f4" name="Non" sourceRef="post_identity_gw" targetRef="post_reject_id" />
+    <sequenceFlow id="post_f5" sourceRef="post_soap" targetRef="post_policy_gw" />
+    <sequenceFlow id="post_f6" name="Oui" sourceRef="post_policy_gw" targetRef="post_grpc" />
+    <sequenceFlow id="post_f7" name="Non" sourceRef="post_policy_gw" targetRef="post_reject_pol" />
+    <sequenceFlow id="post_f8" sourceRef="post_grpc" targetRef="post_graphql" />
+    <sequenceFlow id="post_f9" sourceRef="post_graphql" targetRef="post_success" />
+
+    <dataOutputAssociation id="post_data_assoc">
+      <sourceRef>post_graphql</sourceRef>
+      <targetRef>post_mongo</targetRef>
+    </dataOutputAssociation>
+  </process>
+
+  <!-- ==================== DIAGRAMME VISUEL ==================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+
+      <!-- ========== POOL GET ========== -->
+      <bpmndi:BPMNShape id="Participant_GET_di" bpmnElement="Participant_GET" isHorizontal="true">
+        <omgdc:Bounds x="120" y="60" width="1100" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0zitl9l_di" bpmnElement="Event_0zitl9l">
-        <omgdc:Bounds x="822" y="270" width="36" height="36" />
+
+      <bpmndi:BPMNShape id="get_start_di" bpmnElement="get_start">
+        <omgdc:Bounds x="180" y="152" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="808" y="313" width="65" height="14" />
+          <omgdc:Bounds x="164" y="195" width="68" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0wv0r54" bpmnElement="Activity_1eojis4">
-        <omgdc:Bounds x="1000" y="80" width="100" height="80" />
+
+      <bpmndi:BPMNShape id="get_rest_di" bpmnElement="get_rest">
+        <omgdc:Bounds x="270" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_identity_gw_di" bpmnElement="get_identity_gw" isMarkerVisible="true">
+        <omgdc:Bounds x="415" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="413" y="108" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_soap_di" bpmnElement="get_soap">
+        <omgdc:Bounds x="510" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_policy_gw_di" bpmnElement="get_policy_gw" isMarkerVisible="true">
+        <omgdc:Bounds x="655" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="656" y="108" width="48" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_graphql_di" bpmnElement="get_graphql">
+        <omgdc:Bounds x="750" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_mongo_di" bpmnElement="get_mongo">
+        <omgdc:Bounds x="895" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="885" y="202" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_success_di" bpmnElement="get_success">
+        <omgdc:Bounds x="1002" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="978" y="195" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_reject_id_di" bpmnElement="get_reject_id">
+        <omgdc:Bounds x="422" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="403" y="295" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="get_reject_pol_di" bpmnElement="get_reject_pol">
+        <omgdc:Bounds x="662" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="646" y="295" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Edges GET -->
+      <bpmndi:BPMNEdge id="get_f1_di" bpmnElement="get_f1">
+        <omgdi:waypoint x="216" y="170" />
+        <omgdi:waypoint x="270" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f2_di" bpmnElement="get_f2">
+        <omgdi:waypoint x="370" y="170" />
+        <omgdi:waypoint x="415" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f3_di" bpmnElement="get_f3">
+        <omgdi:waypoint x="465" y="170" />
+        <omgdi:waypoint x="510" y="170" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="479" y="152" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f4_di" bpmnElement="get_f4">
+        <omgdi:waypoint x="440" y="195" />
+        <omgdi:waypoint x="440" y="252" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="447" y="213" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f5_di" bpmnElement="get_f5">
+        <omgdi:waypoint x="610" y="170" />
+        <omgdi:waypoint x="655" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f6_di" bpmnElement="get_f6">
+        <omgdi:waypoint x="705" y="170" />
+        <omgdi:waypoint x="750" y="170" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="719" y="152" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f7_di" bpmnElement="get_f7">
+        <omgdi:waypoint x="680" y="195" />
+        <omgdi:waypoint x="680" y="252" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="687" y="213" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_f8_di" bpmnElement="get_f8">
+        <omgdi:waypoint x="850" y="170" />
+        <omgdi:waypoint x="895" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="get_mongo_edge" bpmnElement="get_f8">
+        <omgdi:waypoint x="945" y="170" />
+        <omgdi:waypoint x="1002" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Association GraphQL -> MongoDB GET -->
+      <bpmndi:BPMNEdge id="get_data_assoc_di">
+        <omgdi:waypoint x="850" y="170" />
+        <omgdi:waypoint x="895" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ========== POOL POST ========== -->
+      <bpmndi:BPMNShape id="Participant_POST_di" bpmnElement="Participant_POST" isHorizontal="true">
+        <omgdc:Bounds x="120" y="350" width="1220" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_startEvent" bpmnElement="startEvent">
-        <omgdc:Bounds x="174" y="199" width="30" height="30" />
+
+      <bpmndi:BPMNShape id="post_start_di" bpmnElement="post_start">
+        <omgdc:Bounds x="180" y="442" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="154" y="236" width="71" height="27" />
+          <omgdc:Bounds x="162" y="485" width="72" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0wh27on" bpmnElement="Event_0743o5s">
-        <omgdc:Bounds x="174" y="535" width="30" height="30" />
+
+      <bpmndi:BPMNShape id="post_rest_di" bpmnElement="post_rest">
+        <omgdc:Bounds x="270" y="420" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="post_identity_gw_di" bpmnElement="post_identity_gw" isMarkerVisible="true">
+        <omgdc:Bounds x="415" y="435" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="166" y="572" width="48" height="27" />
+          <omgdc:Bounds x="413" y="398" width="54" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_10oasuq" bpmnElement="Activity_15ae6gi">
-        <omgdc:Bounds x="285" y="584" width="100" height="80" />
+
+      <bpmndi:BPMNShape id="post_soap_di" bpmnElement="post_soap">
+        <omgdc:Bounds x="510" y="420" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1r65k0q" bpmnElement="Gateway_03vszk4" isMarkerVisible="true">
-        <omgdc:Bounds x="430" y="604" width="40" height="40" />
+
+      <bpmndi:BPMNShape id="post_policy_gw_di" bpmnElement="post_policy_gw" isMarkerVisible="true">
+        <omgdc:Bounds x="655" y="435" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="411" y="644" width="79" height="14" />
+          <omgdc:Bounds x="656" y="398" width="48" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0dbwse3" bpmnElement="Activity_1cwpy2f">
-        <omgdc:Bounds x="530" y="506" width="100" height="80" />
+
+      <bpmndi:BPMNShape id="post_grpc_di" bpmnElement="post_grpc">
+        <omgdc:Bounds x="750" y="420" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1e8h4ni" bpmnElement="Event_1ma6epr">
-        <omgdc:Bounds x="530" y="696" width="28" height="28" />
+
+      <bpmndi:BPMNShape id="post_graphql_di" bpmnElement="post_graphql">
+        <omgdc:Bounds x="900" y="420" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="post_mongo_di" bpmnElement="post_mongo">
+        <omgdc:Bounds x="1045" y="435" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="507" y="732" width="86" height="27" />
+          <omgdc:Bounds x="1035" y="492" width="70" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_15xgezn" bpmnElement="Gateway_1pzlckv" isMarkerVisible="true">
-        <omgdc:Bounds x="655" y="525" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0rp70bt" bpmnElement="Activity_1derlw8">
-        <omgdc:Bounds x="730" y="420" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0pcoa1c" bpmnElement="Event_1ec3e0g">
-        <omgdc:Bounds x="762" y="606" width="36" height="36" />
+
+      <bpmndi:BPMNShape id="post_success_di" bpmnElement="post_success">
+        <omgdc:Bounds x="1152" y="442" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="748" y="649" width="65" height="14" />
+          <omgdc:Bounds x="1127" y="485" width="86" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="BPMNEdge_flow1" bpmnElement="flow1">
-        <omgdi:waypoint x="204" y="214" />
-        <omgdi:waypoint x="245" y="214" />
-        <omgdi:waypoint x="245" y="288" />
-        <omgdi:waypoint x="285" y="288" />
+
+      <bpmndi:BPMNShape id="post_reject_id_di" bpmnElement="post_reject_id">
+        <omgdc:Bounds x="422" y="542" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="403" y="585" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="post_reject_pol_di" bpmnElement="post_reject_pol">
+        <omgdc:Bounds x="662" y="542" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="646" y="585" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Edges POST -->
+      <bpmndi:BPMNEdge id="post_f1_di" bpmnElement="post_f1">
+        <omgdi:waypoint x="216" y="460" />
+        <omgdi:waypoint x="270" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_flow2" bpmnElement="flow2">
-        <omgdi:waypoint x="385" y="288" />
-        <omgdi:waypoint x="430" y="288" />
+
+      <bpmndi:BPMNEdge id="post_f2_di" bpmnElement="post_f2">
+        <omgdi:waypoint x="370" y="460" />
+        <omgdi:waypoint x="415" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_flow3" bpmnElement="flow3">
-        <omgdi:waypoint x="450" y="268" />
-        <omgdi:waypoint x="450" y="210" />
-        <omgdi:waypoint x="530" y="210" />
+
+      <bpmndi:BPMNEdge id="post_f3_di" bpmnElement="post_f3">
+        <omgdi:waypoint x="465" y="460" />
+        <omgdi:waypoint x="510" y="460" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="479" y="442" width="18" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_flow4" bpmnElement="flow4">
-        <omgdi:waypoint x="450" y="308" />
-        <omgdi:waypoint x="450" y="374" />
-        <omgdi:waypoint x="530" y="374" />
+
+      <bpmndi:BPMNEdge id="post_f4_di" bpmnElement="post_f4">
+        <omgdi:waypoint x="440" y="485" />
+        <omgdi:waypoint x="440" y="542" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="447" y="503" width="21" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0hv9znx_di" bpmnElement="Flow_0hv9znx">
-        <omgdi:waypoint x="630" y="210" />
-        <omgdi:waypoint x="685" y="210" />
+
+      <bpmndi:BPMNEdge id="post_f5_di" bpmnElement="post_f5">
+        <omgdi:waypoint x="610" y="460" />
+        <omgdi:waypoint x="655" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1na3ihb_di" bpmnElement="Flow_1na3ihb">
-        <omgdi:waypoint x="710" y="185" />
-        <omgdi:waypoint x="710" y="120" />
-        <omgdi:waypoint x="790" y="120" />
+
+      <bpmndi:BPMNEdge id="post_f6_di" bpmnElement="post_f6">
+        <omgdi:waypoint x="705" y="460" />
+        <omgdi:waypoint x="750" y="460" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="719" y="442" width="18" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0b6kipb_di" bpmnElement="Flow_0b6kipb">
-        <omgdi:waypoint x="710" y="235" />
-        <omgdi:waypoint x="710" y="288" />
-        <omgdi:waypoint x="822" y="288" />
+
+      <bpmndi:BPMNEdge id="post_f7_di" bpmnElement="post_f7">
+        <omgdi:waypoint x="680" y="485" />
+        <omgdi:waypoint x="680" y="542" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="687" y="503" width="21" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1wuu0kj_di" bpmnElement="Flow_1wuu0kj">
-        <omgdi:waypoint x="890" y="120" />
-        <omgdi:waypoint x="1000" y="120" />
+
+      <bpmndi:BPMNEdge id="post_f8_di" bpmnElement="post_f8">
+        <omgdi:waypoint x="850" y="460" />
+        <omgdi:waypoint x="900" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_0okwxmx" bpmnElement="Flow_0u14rv0">
-        <omgdi:waypoint x="204" y="550" />
-        <omgdi:waypoint x="245" y="550" />
-        <omgdi:waypoint x="245" y="624" />
-        <omgdi:waypoint x="285" y="624" />
+
+      <bpmndi:BPMNEdge id="post_f9_di" bpmnElement="post_f9">
+        <omgdi:waypoint x="1000" y="460" />
+        <omgdi:waypoint x="1045" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_0egvd4d" bpmnElement="Flow_0ee328e">
-        <omgdi:waypoint x="385" y="624" />
-        <omgdi:waypoint x="430" y="624" />
+
+      <bpmndi:BPMNEdge id="post_mongo_edge">
+        <omgdi:waypoint x="1095" y="460" />
+        <omgdi:waypoint x="1152" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_16njyeh" bpmnElement="Flow_1720pln">
-        <omgdi:waypoint x="450" y="604" />
-        <omgdi:waypoint x="450" y="546" />
-        <omgdi:waypoint x="530" y="546" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_10khjdo" bpmnElement="Flow_1tgkkc8">
-        <omgdi:waypoint x="450" y="644" />
-        <omgdi:waypoint x="450" y="710" />
-        <omgdi:waypoint x="530" y="710" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_15irt65_di" bpmnElement="Flow_15irt65">
-        <omgdi:waypoint x="630" y="546" />
-        <omgdi:waypoint x="643" y="546" />
-        <omgdi:waypoint x="643" y="550" />
-        <omgdi:waypoint x="655" y="550" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_19i5jho_di" bpmnElement="Flow_19i5jho">
-        <omgdi:waypoint x="680" y="525" />
-        <omgdi:waypoint x="680" y="460" />
-        <omgdi:waypoint x="730" y="460" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_19amm9d_di" bpmnElement="Flow_19amm9d">
-        <omgdi:waypoint x="680" y="575" />
-        <omgdi:waypoint x="680" y="624" />
-        <omgdi:waypoint x="762" y="624" />
-      </bpmndi:BPMNEdge>
+
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </definitions>

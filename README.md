@@ -28,12 +28,13 @@ Une fois les conteneurs lancés, voici les points d'entrée pour accéder à l'i
 
 | Service | Type | Port Local | URL d'accès / Endpoint | Description                                                                                                       |
 | --- | --- | --- | --- |-------------------------------------------------------------------------------------------------------------------|
-| **Frontend** | Web UI | `3000` | [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) | Interface utilisateur principale pour tester l'application.                                                       |
-| **Workflow Service** | REST (Orchestrator) | `8082` | [http://localhost:8082](https://www.google.com/search?q=http://localhost:8082) | Point d'entrée principal de l'API qui coordonne les autres services.                                              |
-| **Identity Service** | REST | `8080` | [http://localhost:8080/api/identity](https://www.google.com/search?q=http://localhost:8080/api/identity) | Gestion et vérification de l'identité des utilisateurs.                                                           |
-| **Policy Service** | SOAP | `8081` | [http://localhost:8081/ws](https://www.google.com/search?q=http://localhost:8081/ws) | verification de la police d'assurance.                                                                            |
-| **Claim Service** | GraphQL | `4000` | [http://localhost:4000](https://www.google.com/search?q=http://localhost:4000) | Suivi des réclamations.                                                                                           |
-| **Fraud Service** | gRPC | `50051` | `localhost:50051` | Détection de fraude. |
+| **Frontend** | Web UI | `3000` | [http://localhost:3000](http://localhost:3000) | Interface utilisateur principale pour tester l'application.                                                       |
+| **Workflow Service** | REST (Orchestrator) | `8082` | [http://localhost:8082](http://localhost:8082) | Point d'entrée principal de l'API qui coordonne les autres services.                                              |
+| **Identity Service** | REST | `8080` | [http://localhost:8080/api/identity](http://localhost:8080/api/identity) | Gestion et vérification de l'identité des utilisateurs.                                                           |
+| **Policy Service** | SOAP | `8081` | [http://localhost:8081/ws](http://localhost:8081/ws) | Vérification de la police d'assurance.                                                                            |
+| **Claim Service** | GraphQL | `4000` | [http://localhost:4000](http://localhost:4000) | Suivi des réclamations (stockage dans MongoDB).                                                                   |
+| **Fraud Service** | gRPC | `50051` | `localhost:50051` | Détection de fraude.                                                                                              |
+| **MongoDB** | Base de données | `27017` | `mongodb://localhost:27017` | Base de données NoSQL pour le stockage des réclamations (utilisée par le service GraphQL).                        |
 
 ## Arrêter l'application
 
